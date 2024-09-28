@@ -10,6 +10,9 @@
 #   universal: false
 
 -e file:.
+alabaster==0.7.16
+babel==2.16.0
+beautifulsoup4==4.12.3
 certifi==2024.8.30
 cffi==1.17.1
 charset-normalizer==3.3.2
@@ -17,17 +20,37 @@ click==8.1.7
 colorama==0.4.6
 cryptography==43.0.1
 deprecated==1.2.14
+docutils==0.21.2
 idna==3.10
+imagesize==1.4.1
 iniconfig==2.0.0
+jinja2==3.1.4
+markdown-it-py==3.0.0
+markupsafe==2.1.5
+mdit-py-plugins==0.4.2
+mdurl==0.1.2
+myst-parser==4.0.0
 packaging==24.1
 pluggy==1.5.0
 pycparser==2.22
 pygithub==2.4.0
+pygments==2.18.0
 pyjwt==2.9.0
 pynacl==1.5.0
 pytest==8.3.3
 pytest-mock==3.14.0
+pyyaml==6.0.2
 requests==2.32.3
+snowballstemmer==2.2.0
+soupsieve==2.6
+sphinx==7.3.7
+sphinxawesome-theme==5.2.0
+sphinxcontrib-applehelp==2.0.0
+sphinxcontrib-devhelp==2.0.0
+sphinxcontrib-htmlhelp==2.1.0
+sphinxcontrib-jsmath==1.0.1
+sphinxcontrib-qthelp==2.0.0
+sphinxcontrib-serializinghtml==2.0.0
 typing-extensions==4.12.2
 urllib3==2.2.3
 wrapt==1.16.0
