@@ -7,3 +7,9 @@ def create_branch(g: Github, new_branch: str, source_branch: str, repo_name: str
 	repo.create_git_ref(ref=f"refs/heads/{new_branch}", sha=source_sha)
 	print(f"Branch '{new_branch}' created successfully!")
 
+
+def delete_branch(g: Github, branch: str, repo_name: str):
+	repo = g.get_repo(repo_name)
+	repo.get_git_ref(f"heads/{branch}").delete()
+	print(f"Branch '{branch}' deleted successfully!")
+	
