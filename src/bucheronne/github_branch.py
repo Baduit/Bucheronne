@@ -51,6 +51,16 @@ def check_branches_exist(g: Github, repos: Iterable[str], branches: Iterable[str
 		exit(1)
 
 
+def check_branch_does_not_exist(g: Github, repos: Iterable[str], branch: str):
+	error_found = False
+	for repo in repos:
+		if not _is_branch_missing(g, repo, branch):
+			log.error('The branch "%s" already exists in repo "%s"', branch, repo)
+			error_found = True
+	if error_found:
+		exit(2)
+
+
 @dataclass
 class _MissingBranch:
 	repo_name: str
