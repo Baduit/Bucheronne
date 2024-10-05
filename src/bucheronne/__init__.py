@@ -1,7 +1,7 @@
 import click
 from github import Github, Consts
 
-from .github_branch import create_branch, create_new_pr, delete_branch, merge_pr_by_branch_names
+from .github_branch import check_branches_exist, create_branch, create_new_pr, delete_branch, merge_pr_by_branch_names
 from .github_token import deduce_token, read_from_file
 
 
@@ -21,6 +21,7 @@ def create(repos, hostname, token_path, branch, source) -> int:
     auth = read_from_file(token_path) if token_path else deduce_token()
     base_url = f"https://{hostname}/api/v3" if hostname else Consts.DEFAULT_BASE_URL
     with Github(auth=auth, base_url=base_url) as g:
+        check_branches_exist(g, repos, [source])
         for repo in repos:
             create_branch(g, repo, branch, source)
     return 0
@@ -35,6 +36,7 @@ def delete(repos, hostname, token_path, branch) -> int:
     auth = read_from_file(token_path) if token_path else deduce_token()
     base_url = f"https://{hostname}/api/v3" if hostname else Consts.DEFAULT_BASE_URL
     with Github(auth=auth, base_url=base_url) as g:
+        check_branches_exist(g, repos, [branch])
         for repo in repos:
             delete_branch(g, repo, branch)
     return 0
@@ -51,6 +53,7 @@ def create_pr(repos, hostname, token_path, head, base, title) -> int:
     auth = read_from_file(token_path) if token_path else deduce_token()
     base_url = f"https://{hostname}/api/v3" if hostname else Consts.DEFAULT_BASE_URL
     with Github(auth=auth, base_url=base_url) as g:
+        check_branches_exist(g, repos, [base, head])
         for repo in repos:
             create_new_pr(g, repo, head, base, title)
     return 0
@@ -67,6 +70,7 @@ def merge_pr(repos, hostname, token_path, head, base, delete_branch) -> int:
     auth = read_from_file(token_path) if token_path else deduce_token()
     base_url = f"https://{hostname}/api/v3" if hostname else Consts.DEFAULT_BASE_URL
     with Github(auth=auth, base_url=base_url) as g:
+        check_branches_exist(g, repos, [base, head])
         for repo in repos:
             merge_pr_by_branch_names(g, repo, head, base, "rebase", delete_branch)
     return 0
