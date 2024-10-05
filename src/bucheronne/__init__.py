@@ -6,7 +6,7 @@ from rich.logging import RichHandler
 from rich.progress import track
 from rich.traceback import install
 
-from .github_branch import check_branches_exist, check_branch_does_not_exist, create_branch, create_new_pr, delete_branch, merge_pr_by_branch_names
+from .github_branch import check_branches_exist, check_branch_does_not_exist, check_repos_exist, create_branch, create_new_pr, delete_branch, merge_pr_by_branch_names
 from .github_token import deduce_token, read_from_file
 
 
@@ -29,10 +29,11 @@ def create(repos, hostname, token_path, branch, source) -> int:
     auth = read_from_file(token_path) if token_path else deduce_token()
     base_url = f"https://{hostname}/api/v3" if hostname else Consts.DEFAULT_BASE_URL
     with Github(auth=auth, base_url=base_url) as g:
-        check_branch_does_not_exist(g, repos, branch)
-        check_branches_exist(g, repos, [source])
+        repos = check_repos_exist(g, repos)
+        check_branch_does_not_exist(repos, branch)
+        check_branches_exist(repos, [source])
         for repo in track(repos, description='Creating'):
-            create_branch(g, repo, branch, source)
+            create_branch(repo, branch, source)
     return 0
 
 
@@ -45,9 +46,10 @@ def delete(repos, hostname, token_path, branch) -> int:
     auth = read_from_file(token_path) if token_path else deduce_token()
     base_url = f"https://{hostname}/api/v3" if hostname else Consts.DEFAULT_BASE_URL
     with Github(auth=auth, base_url=base_url) as g:
-        check_branches_exist(g, repos, [branch])
+        repos = check_repos_exist(g, repos)
+        check_branches_exist(repos, [branch])
         for repo in track(repos, description='Deleting'):
-            delete_branch(g, repo, branch)
+            delete_branch(repo, branch)
     return 0
 
 
@@ -62,9 +64,10 @@ def create_pr(repos, hostname, token_path, head, base, title) -> int:
     auth = read_from_file(token_path) if token_path else deduce_token()
     base_url = f"https://{hostname}/api/v3" if hostname else Consts.DEFAULT_BASE_URL
     with Github(auth=auth, base_url=base_url) as g:
-        check_branches_exist(g, repos, [base, head])
+        repos = check_repos_exist(g, repos)
+        check_branches_exist(repos, [base, head])
         for repo in track(repos, description='Creating'):
-            create_new_pr(g, repo, head, base, title)
+            create_new_pr(repo, head, base, title)
     return 0
 
 
@@ -79,7 +82,8 @@ def merge_pr(repos, hostname, token_path, head, base, delete_branch) -> int:
     auth = read_from_file(token_path) if token_path else deduce_token()
     base_url = f"https://{hostname}/api/v3" if hostname else Consts.DEFAULT_BASE_URL
     with Github(auth=auth, base_url=base_url) as g:
-        check_branches_exist(g, repos, [base, head])
+        repos = check_repos_exist(repos)
+        check_branches_exist(repos, [base, head])
         for repo in track(repos, description='Merging'):
             merge_pr_by_branch_names(g, repo, head, base, "rebase", delete_branch)
     return 0
