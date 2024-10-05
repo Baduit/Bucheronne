@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import logging
 from typing import Iterable, List
 
+from rich.progress import track
 from github import Github, GithubException
 
 log = logging.getLogger("rich")
@@ -53,7 +54,7 @@ def check_branches_exist(g: Github, repos: Iterable[str], branches: Iterable[str
 
 def check_branch_does_not_exist(g: Github, repos: Iterable[str], branch: str):
 	error_found = False
-	for repo in repos:
+	for repo in track(repos, description='Check branches do not exist'):
 		if not _is_branch_missing(g, repo, branch):
 			log.error('The branch "%s" already exists in repo "%s"', branch, repo)
 			error_found = True
@@ -69,10 +70,10 @@ class _MissingBranch:
 
 def _get_missing_branches(g: Github, repos: Iterable[str], branches: Iterable[str]) -> List[_MissingBranch]:
 	missing_branches: List[_MissingBranch] = []
-	for repo in repos:
-		for branch in branches:
-			if _is_branch_missing(g, repo, branch):
-				missing_branches.append(_MissingBranch(repo, branch))
+	checks = [(repo_name, branch_name) for repo_name in repos for branch_name in branches]
+	for repo, branch in track(checks, description='Check branches exist'):
+		if _is_branch_missing(g, repo, branch):
+			missing_branches.append(_MissingBranch(repo, branch))
 	return missing_branches
 
 

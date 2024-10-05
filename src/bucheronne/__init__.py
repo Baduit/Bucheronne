@@ -3,6 +3,7 @@ import logging
 import click
 from github import Github, Consts
 from rich.logging import RichHandler
+from rich.progress import track
 from rich.traceback import install
 
 from .github_branch import check_branches_exist, check_branch_does_not_exist, create_branch, create_new_pr, delete_branch, merge_pr_by_branch_names
@@ -30,7 +31,7 @@ def create(repos, hostname, token_path, branch, source) -> int:
     with Github(auth=auth, base_url=base_url) as g:
         check_branch_does_not_exist(g, repos, branch)
         check_branches_exist(g, repos, [source])
-        for repo in repos:
+        for repo in track(repos, description='Creating'):
             create_branch(g, repo, branch, source)
     return 0
 
@@ -45,7 +46,7 @@ def delete(repos, hostname, token_path, branch) -> int:
     base_url = f"https://{hostname}/api/v3" if hostname else Consts.DEFAULT_BASE_URL
     with Github(auth=auth, base_url=base_url) as g:
         check_branches_exist(g, repos, [branch])
-        for repo in repos:
+        for repo in track(repos, description='Deleting'):
             delete_branch(g, repo, branch)
     return 0
 
@@ -62,7 +63,7 @@ def create_pr(repos, hostname, token_path, head, base, title) -> int:
     base_url = f"https://{hostname}/api/v3" if hostname else Consts.DEFAULT_BASE_URL
     with Github(auth=auth, base_url=base_url) as g:
         check_branches_exist(g, repos, [base, head])
-        for repo in repos:
+        for repo in track(repos, description='Creating'):
             create_new_pr(g, repo, head, base, title)
     return 0
 
@@ -79,6 +80,6 @@ def merge_pr(repos, hostname, token_path, head, base, delete_branch) -> int:
     base_url = f"https://{hostname}/api/v3" if hostname else Consts.DEFAULT_BASE_URL
     with Github(auth=auth, base_url=base_url) as g:
         check_branches_exist(g, repos, [base, head])
-        for repo in repos:
+        for repo in track(repos, description='Merging'):
             merge_pr_by_branch_names(g, repo, head, base, "rebase", delete_branch)
     return 0
