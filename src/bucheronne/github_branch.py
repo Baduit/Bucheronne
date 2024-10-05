@@ -1,7 +1,10 @@
 from dataclasses import dataclass
+import logging
 from typing import Iterable, List
 
 from github import Github, GithubException
+
+log = logging.getLogger("rich")
 
 
 def create_branch(g: Github, repo_name: str, new_branch: str, source_branch: str):
@@ -9,13 +12,13 @@ def create_branch(g: Github, repo_name: str, new_branch: str, source_branch: str
 	source_ref = repo.get_git_ref(f"heads/{source_branch}")
 	source_sha = source_ref.object.sha
 	repo.create_git_ref(ref=f"refs/heads/{new_branch}", sha=source_sha)
-	print(f"Branch '{new_branch}' created successfully!")
+	log.info('Branch "%s" created from %s in repo "%s"', new_branch, repo_name, source_branch)
 
 
 def delete_branch(g: Github, repo_name: str, branch: str):
 	repo = g.get_repo(repo_name)
 	repo.get_git_ref(f"heads/{branch}").delete()
-	print(f"Branch '{branch}' deleted successfully!")
+	log.info('Branch "%s" deleted in repo "%s"', branch, repo_name)
 
 
 def create_new_pr(g: Github, repo_name: str, head_branch: str, base_branch: str, title: str):
@@ -29,7 +32,7 @@ def create_new_pr(g: Github, repo_name: str, head_branch: str, base_branch: str,
 	"""
 	repo = g.get_repo(repo_name)
 	pr = repo.create_pull(base=base_branch, head=head_branch, title=title)
-	print(f"Pull Request created successfully: {pr.html_url}")
+	log.info('PR created in repo "%s": %s', repo_name, pr.html_url)
 
 
 def merge_pr_by_branch_names(g: Github, repo_name: str, head_branch: str, base_branch: str, merge_method: str, delete_branch: bool):
@@ -37,14 +40,14 @@ def merge_pr_by_branch_names(g: Github, repo_name: str, head_branch: str, base_b
 	pull_requests = repo.get_pulls(base=base_branch, head=head_branch, state="open")
 	assert pull_requests.totalCount == 1
 	pull_requests[0].merge(merge_method=merge_method, delete_branch=delete_branch)
-	print("Sucess")
+	log.info('Branch "%s" was successfully merged into "%s" in repo %s', head_branch, base_branch, repo_name)
 
 
 def check_branches_exist(g: Github, repos: Iterable[str], branches: Iterable[str]):
 	missing_branches = _get_missing_branches(g, repos, branches)
 	if missing_branches:
 		for missing in missing_branches:
-			print(f'In repo "{missing.repo_name}" the branch "{missing.branch_name}" is missing')
+			log.error('The branch "%s" is missing in repo "%s"', missing.branch_name, missing.repo_name)
 		exit(1)
 
 

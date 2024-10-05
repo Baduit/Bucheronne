@@ -1,5 +1,8 @@
+import logging
+
 import click
 from github import Github, Consts
+from rich.logging import RichHandler
 from rich.traceback import install
 
 from .github_branch import check_branches_exist, create_branch, create_new_pr, delete_branch, merge_pr_by_branch_names
@@ -10,6 +13,9 @@ from .github_token import deduce_token, read_from_file
 def main():
     """Bucheronne CLI group"""
     install(show_locals=True)
+    
+    FORMAT = "%(message)s"
+    logging.basicConfig(level="INFO", format=FORMAT, datefmt="[%X]", handlers=[RichHandler()])
 
 
 @main.command()
