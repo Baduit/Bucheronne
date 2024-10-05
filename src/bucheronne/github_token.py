@@ -1,9 +1,12 @@
+import logging
 from netrc import netrc
 import os
 from pathlib import Path
 import platform
 
 from github import Auth
+
+log = logging.getLogger("rich")
 
 
 def read_from_file(token_path: os.PathLike) -> Auth.Token:
@@ -20,6 +23,7 @@ def read_from_file(token_path: os.PathLike) -> Auth.Token:
 		FileNotFoundError: If the file at token_path does not exist.
 		IOError: If there is an issue opening or reading the file.
 	"""
+	log.debug('Reading token from file')
 	with open(token_path, "r", encoding='utf8') as f:
 		return Auth.Token(f.read().strip())
 
@@ -32,6 +36,7 @@ def get_from_env() -> Auth.Token | None:
 		Auth.Token or None: An instance of Auth.Token if the "GITHUB_TOKEN" environment variable is set, 
 		otherwise None.
 	"""
+	log.debug('Reading token from env variable')
 	token = os.environ.get("GITHUB_TOKEN")
 	return Auth.Token(token) if token else None
 
@@ -62,11 +67,13 @@ def read_from_netrc() -> Auth.Token | None:
 		Auth.Token or None: An instance of Auth.Token if the 'github.com' credentials are found in the 
 		.netrc or _netrc file, otherwise None.
 	"""
+	log.debug('trying to read token from netrc file')
 	netrc_path = _get_netrc_path()
 	if netrc_path.exists():
+		log.debug('Netrc file exists')
 		for machine, auth_data in netrc(netrc_path).hosts.items():
 			if machine == 'github.com':
-				print(auth_data)
+				log.debug('Corresponding logging information found in netrc file')
 				_, _,  token = auth_data
 				return Auth.Token(token)
 	return None
