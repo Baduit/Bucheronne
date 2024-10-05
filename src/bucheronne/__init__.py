@@ -1,5 +1,6 @@
 import click
 from github import Github, Consts
+from rich.traceback import install
 
 from .github_branch import check_branches_exist, create_branch, create_new_pr, delete_branch, merge_pr_by_branch_names
 from .github_token import deduce_token, read_from_file
@@ -8,7 +9,7 @@ from .github_token import deduce_token, read_from_file
 @click.group()
 def main():
     """Bucheronne CLI group"""
-    pass
+    install(show_locals=True)
 
 
 @main.command()
