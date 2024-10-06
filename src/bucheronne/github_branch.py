@@ -8,6 +8,11 @@ from github.Repository import Repository
 
 log = logging.getLogger("rich")
 
+# Error codes
+MISSING_BRANCH = 1
+BRANCH_ALREADY_EXIST = 2
+REPOSITORY_DOES_NOT_EXIST = 3
+
 
 def create_branch(repo: Repository, new_branch: str, source_branch: str):
 	source_ref = repo.get_git_ref(f"heads/{source_branch}")
@@ -46,7 +51,7 @@ def check_branches_exist(repos: List[Repository], branches: Iterable[str]):
 	if missing_branches:
 		for missing in missing_branches:
 			log.error('The branch "%s" is missing in repo "%s"', missing.branch_name, missing.repo_name)
-		exit(1)
+		exit(MISSING_BRANCH)
 
 
 def check_branch_does_not_exist(repos: List[Repository], branch: str):
@@ -56,7 +61,7 @@ def check_branch_does_not_exist(repos: List[Repository], branch: str):
 			log.error('The branch "%s" already exists in repo "%s"', branch, repo.name)
 			error_found = True
 	if error_found:
-		exit(2)
+		exit(BRANCH_ALREADY_EXIST)
 
 
 @dataclass
@@ -97,5 +102,5 @@ def check_repos_exist(g: Github, repos: List[str]) -> List[Repository]:
 			else:
 				raise e
 	if len(checked_repos) != len(repos):
-		exit(3)
+		exit(REPOSITORY_DOES_NOT_EXIST)
 	return checked_repos
