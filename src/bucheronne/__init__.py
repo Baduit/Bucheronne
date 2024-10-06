@@ -11,12 +11,13 @@ from .github_token import deduce_token, read_from_file
 
 
 @click.group()
-def main():
+@click.option("--log-level", "-l", type=str, default='WARNING', help="Log level")
+def main(log_level):
     """Bucheronne CLI group"""
     install(show_locals=True)
     
     FORMAT = "%(message)s"
-    logging.basicConfig(level="INFO", format=FORMAT, datefmt="[%X]", handlers=[RichHandler()])
+    logging.basicConfig(level=log_level, format=FORMAT, datefmt="[%X]", handlers=[RichHandler()])
 
 
 @main.command()
