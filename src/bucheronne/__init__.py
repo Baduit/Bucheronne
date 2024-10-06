@@ -79,12 +79,13 @@ def create_pr(repos, hostname, token_path, head, base, title) -> int:
 @click.option("--head", "-h", required=True, type=str, help="Name of the branch you want to merge")
 @click.option("--base", "-b", required=True, type=str, default='main', help="Name of the branch you want to merge into")
 @click.option("--delete-branch", "-d", type=bool, default=True, help="Flag to delete or not the branch afterward")
-def merge_pr(repos, hostname, token_path, head, base, delete_branch) -> int:
+@click.option("--merge-method", "-m", type=click.Choice(["rebase", "merge", "squash"]), default="rebase", help="Merge method, default is rebase")
+def merge_pr(repos, hostname, token_path, head, base, delete_branch, merge_method) -> int:
     auth = read_from_file(token_path) if token_path else deduce_token()
     base_url = f"https://{hostname}/api/v3" if hostname else Consts.DEFAULT_BASE_URL
     with Github(auth=auth, base_url=base_url) as g:
         repos = check_repos_exist(repos)
         check_branches_exist(repos, [base, head])
         for repo in track(repos, description='Merging'):
-            merge_pr_by_branch_names(g, repo, head, base, "rebase", delete_branch)
+            merge_pr_by_branch_names(g, repo, head, base, merge_method, delete_branch)
     return 0
