@@ -27,9 +27,7 @@ def main(log_level):
 @click.option("--branch", "-b", required=True, type=str, help="Name of the branch to create")
 @click.option("--source", "-s", type=str, default='main', help="Name of the branch we are creating the new branch from.")
 def create(repos, hostname, token_path, branch, source) -> int:
-    auth = read_from_file(token_path) if token_path else deduce_token()
-    base_url = f"https://{hostname}/api/v3" if hostname else Consts.DEFAULT_BASE_URL
-    with Github(auth=auth, base_url=base_url) as g:
+    with _connect(hostname, token_path) as g:
         repos = check_repos_exist(g, repos)
         check_branch_does_not_exist(repos, branch)
         check_branches_exist(repos, [source])
@@ -44,9 +42,7 @@ def create(repos, hostname, token_path, branch, source) -> int:
 @click.option("--token-path", "-t", type=str, help="Path of the file where the token is stored")
 @click.option("--branch", "-b", required=True, type=str, help="Name of the branch to create")
 def delete(repos, hostname, token_path, branch) -> int:
-    auth = read_from_file(token_path) if token_path else deduce_token()
-    base_url = f"https://{hostname}/api/v3" if hostname else Consts.DEFAULT_BASE_URL
-    with Github(auth=auth, base_url=base_url) as g:
+    with _connect(hostname, token_path) as g:
         repos = check_repos_exist(g, repos)
         check_branches_exist(repos, [branch])
         for repo in track(repos, description='Deleting'):
@@ -62,9 +58,7 @@ def delete(repos, hostname, token_path, branch) -> int:
 @click.option("--base", "-b", required=True, type=str, default='main', help="Name of the branch you want to merge into")
 @click.option("--title", "-i", required=True, type=str, default='main', help="Title of the PRs.")
 def create_pr(repos, hostname, token_path, head, base, title) -> int:
-    auth = read_from_file(token_path) if token_path else deduce_token()
-    base_url = f"https://{hostname}/api/v3" if hostname else Consts.DEFAULT_BASE_URL
-    with Github(auth=auth, base_url=base_url) as g:
+    with _connect(hostname, token_path) as g:
         repos = check_repos_exist(g, repos)
         check_branches_exist(repos, [base, head])
         for repo in track(repos, description='Creating'):
@@ -81,11 +75,15 @@ def create_pr(repos, hostname, token_path, head, base, title) -> int:
 @click.option("--delete-branch", "-d", type=bool, default=True, help="Flag to delete or not the branch afterward")
 @click.option("--merge-method", "-m", type=click.Choice(["rebase", "merge", "squash"]), default="rebase", help="Merge method, default is rebase")
 def merge_pr(repos, hostname, token_path, head, base, delete_branch, merge_method) -> int:
-    auth = read_from_file(token_path) if token_path else deduce_token()
-    base_url = f"https://{hostname}/api/v3" if hostname else Consts.DEFAULT_BASE_URL
-    with Github(auth=auth, base_url=base_url) as g:
+    with _connect(hostname, token_path) as g:
         repos = check_repos_exist(repos)
         check_branches_exist(repos, [base, head])
         for repo in track(repos, description='Merging'):
             merge_pr_by_branch_names(g, repo, head, base, merge_method, delete_branch)
     return 0
+
+
+def _connect(hostname: str, token_path: str | None) -> Github:
+    auth = read_from_file(token_path) if token_path else deduce_token()
+    base_url = f"https://{hostname}/api/v3" if hostname else Consts.DEFAULT_BASE_URL
+    return Github(auth=auth, base_url=base_url)
